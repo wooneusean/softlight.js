@@ -5,17 +5,37 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="/src/main.ts" defer></script>
   <title>Vite + TS</title>
 </head>
 
-<body style="background-color: hsl(0, 0%, 15%);">
-  <div id="app">
-    <div style="width: 1200px; height: 600px;" id="softlight">
-      <canvas></canvas>
-      <img src="images/chair.png" alt="Millberget Swivel Chair">
+<body style="background-color: hsl(0, 0%, 15%); height:100vh;">
+  <div id="app" style="height:100%; padding-block: 6rem;">
+    <div
+      style="height: 100%;align-items: center;display: flex;gap: 200px;justify-content: space-around;flex-wrap: wrap;">
+      <div style="width: 640px; height: 640px;" id="softlight-img">
+        <canvas></canvas>
+        <img src="https://picsum.photos/640/640" alt="Random image">
+      </div>
+
+      <div style="width: 640px; height: 640px;" id="softlight-vid">
+        <canvas></canvas>
+        <video controls>
+          <source src="/videos/dnd.mp4" type="video/mp4">
+        </video>
+
+      </div>
+      <div style="width: 640px; height: 640px;" id="softlight-vid">
+        <canvas></canvas>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/aqz-KE-bpKQ" title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+
+      </div>
     </div>
   </div>
-  <script type="module" src="/src/main.ts"></script>
 </body>
 
 </html>

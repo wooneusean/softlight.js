@@ -1,4 +1,5 @@
-import SoftLight from './softlight'
-import './softlight.scss'
+import SoftLight from "./softlight";
+import "./softlight.scss";
 
-const softlight = new SoftLight("#softlight");
+const softlightImg = new SoftLight("#softlight-img");
+const softlightVid = new SoftLight("#softlight-vid");
