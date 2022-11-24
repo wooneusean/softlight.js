@@ -1,3 +1,5 @@
+import "./softlight.scss";
+
 export interface RGBAColor {
     r: number;
     g: number;
@@ -47,7 +49,12 @@ export default class SoftLight {
         }
 
         // iframe to handle youtube video (but why tho)
-        let m =
+        let m:
+            | HTMLImageElement
+            | HTMLVideoElement
+            | HTMLIFrameElement
+            | null
+            | undefined =
             this.element.querySelector("img") ??
             this.element.querySelector("video") ??
             this.element.querySelector("iframe");
@@ -62,7 +69,7 @@ export default class SoftLight {
             m = m.contentWindow?.document.querySelector("video");
         }
 
-        if (m === null) {
+        if (m === null || m === undefined) {
             throw new ReferenceError(
                 "There are no video elements within this iframe element."
             );
