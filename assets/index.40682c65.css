@@ -1,0 +1,1 @@
+.softlight{position:relative}.softlight img,.softlight video,.softlight iframe{object-fit:cover;left:50%;top:50%;transform:translate(-50%,-50%);position:absolute;max-width:100%;max-height:100%}.softlight canvas{position:absolute;transition:filter 3s cubic-bezier(.19,1,.22,1)}
