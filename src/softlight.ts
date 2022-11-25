@@ -1,4 +1,4 @@
-import "./softlight.scss";
+import './softlight.scss';
 
 export interface RGBAColor {
     r: number;
@@ -12,10 +12,10 @@ export interface SoftLightOptions {
     blurRadius: number;
 }
 
-export default class SoftLight {
+export default class SoftLight extends EventTarget {
     private element: HTMLElement;
     private canvas: HTMLCanvasElement;
-    private media: HTMLImageElement | HTMLVideoElement;
+    private media?: HTMLImageElement | HTMLVideoElement;
     public options: SoftLightOptions;
 
     constructor(
@@ -24,69 +24,130 @@ export default class SoftLight {
             blurRadius: 50,
         }
     ) {
+        super();
+
         this.options = options;
 
         let e: any = element;
-        if (typeof element === "string") {
+        if (typeof element === 'string') {
             e = document.querySelector<HTMLImageElement | HTMLVideoElement>(
                 element
             );
             if (!e) {
-                throw new ReferenceError(
-                    "There are no elements with this selector: " + element
+                throw new Error(
+                    'There are no elements with this selector: ' + element
                 );
             }
         }
 
         this.element = e;
-        this.element.classList.add("softlight");
+        this.element.classList.add('softlight');
 
-        let canvas = this.element.querySelector("canvas");
-        if (canvas === null) {
-            throw new ReferenceError(
-                "There are no canvas elements within this SoftLight element."
-            );
+        let existingCanvas = this.element.querySelector('canvas');
+        if (existingCanvas == null) {
+            this.canvas = document.createElement('canvas');
+            this.element.prepend(this.canvas);
+        } else {
+            this.canvas = existingCanvas;
         }
 
-        // iframe to handle youtube video (but why tho)
-        let m:
+        let softLightMedia:
             | HTMLImageElement
             | HTMLVideoElement
             | HTMLIFrameElement
             | null
             | undefined =
-            this.element.querySelector("img") ??
-            this.element.querySelector("video") ??
-            this.element.querySelector("iframe");
-        if (m === null) {
-            throw new ReferenceError(
-                "There are no img, video, or iframe elements within this SoftLight element."
-            );
-        }
-        // TODO: Wait til iframe is loaded, then proceed.
-        this.canvas = canvas;
-        if (m instanceof HTMLIFrameElement) {
-            m = m.contentWindow?.document.querySelector("video");
-        }
+            this.element.querySelector('img') ??
+            this.element.querySelector('video') ??
+            this.element.querySelector('iframe');
 
-        if (m === null || m === undefined) {
-            throw new ReferenceError(
-                "There are no video elements within this iframe element."
+        if (softLightMedia == null) {
+            throw new Error(
+                'There are no img, video, or iframe elements within this SoftLight element.'
             );
         }
 
-        this.media = m;
+        this.addEventListener('medialoaded', this.handleMediaLoaded.bind(this));
 
-        if (this.media instanceof HTMLImageElement) {
-            this.media.onload = this.update.bind(this);
+        if (softLightMedia instanceof HTMLIFrameElement) {
+            softLightMedia.onload = this.handleIframeDocumentLoad.bind(this);
         } else {
-            this.media.onseeked = this.update.bind(this);
-            this.media.ontimeupdate = this.update.bind(this);
-            setTimeout(() => {
-                const seekedEvent = new Event("seeked");
-                this.media.dispatchEvent(seekedEvent);
-            }, 250);
+            const mediaLoadedEvent = new CustomEvent('medialoaded', {
+                detail: softLightMedia,
+            });
+            this.dispatchEvent(mediaLoadedEvent);
         }
+    }
+
+    handleIframeDocumentLoad(e: Event) {
+        if (!(e.target instanceof HTMLIFrameElement)) return;
+
+        const iframeDocument: Document | null = e.target.contentDocument;
+        if (iframeDocument == null) {
+            throw new Error('Document not found within iframe.');
+        }
+
+        const iframeMedia =
+            iframeDocument.querySelector('video') ||
+            iframeDocument.querySelector('img');
+
+        if (iframeMedia == null) {
+            throw new Error(
+                'There are no video or img elements within this iframe element.'
+            );
+        }
+
+        const mediaLoadedEvent = new CustomEvent('medialoaded', {
+            detail: iframeMedia,
+        });
+        this.dispatchEvent(mediaLoadedEvent);
+    }
+
+    handleMediaLoaded(evt: CustomEvent<HTMLImageElement | HTMLVideoElement>) {
+        this.media = evt.detail;
+
+        this.media.onload = this.update.bind(this);
+
+        if (this.media instanceof HTMLVideoElement) {
+            this.media.onplay = () => {
+                window.requestAnimationFrame(this.update.bind(this));
+            };
+
+            this.media.onpause = () => {
+                window.requestAnimationFrame(this.update.bind(this));
+            };
+
+            this.media.onloadeddata = this.update.bind(this);
+            // this.media.ontimeupdate = this.update.bind(this);
+        }
+    }
+
+    getMediaBoundingClientRect(m: HTMLImageElement | HTMLVideoElement) {
+        if (m.ownerDocument === document) {
+            return m.getBoundingClientRect();
+        }
+
+        const mediaIframe = m.ownerDocument.defaultView?.frameElement;
+        if (mediaIframe == null) {
+            return {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+            };
+        }
+
+        return mediaIframe.getBoundingClientRect();
+    }
+
+    getMediaIframe(
+        m: HTMLImageElement | HTMLVideoElement
+    ): HTMLIFrameElement | null | undefined {
+        if (m.ownerDocument === document) {
+            return null;
+        }
+
+        return m.ownerDocument.defaultView?.frameElement as HTMLIFrameElement;
     }
 
     update() {
@@ -99,17 +160,25 @@ export default class SoftLight {
         this.canvas.width = eW;
         this.canvas.height = eH;
 
+        if (this.media == null) return;
+
         const {
             x: iX,
             y: iY,
             width: iW,
             height: iH,
-        } = this.media.getBoundingClientRect();
+        } = this.getMediaBoundingClientRect(this.media);
 
-        const ctx = this.canvas.getContext("2d");
-        if (!ctx) throw new Error("Cannot get context for canvas.");
+        const ctx = this.canvas.getContext('2d');
+        if (!ctx) throw new Error('Cannot get context for canvas.');
 
         ctx.drawImage(this.media, iX - eX, iY - eY, iW, iH);
         this.canvas.style.filter = `blur(${this.options.blurRadius}px)`;
+
+        if (this.media instanceof HTMLVideoElement) {
+            if (this.media.paused === true) return;
+
+            window.requestAnimationFrame(this.update.bind(this));
+        }
     }
 }

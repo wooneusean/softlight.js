@@ -5,34 +5,105 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script type="module" src="/src/main.ts" defer></script>
+  <script type="module" src="/src/main.ts"></script>
   <title>SoftLight.js Demo</title>
+  <style lang="scss">
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: hsl(213, 14%, 15%);
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container {
+      height: 100%;
+      align-items: center;
+      display: flex;
+      gap: 200px;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      padding-block: 6rem;
+    }
+
+    .code {
+      margin-block: 1rem;
+      padding: 1rem;
+      font-family: 'Roboto Mono', monospaced;
+      font-size: 14px;
+      background: hsl(213, 14%, 25%);
+      border-radius: 5px;
+      box-shadow: inset 0 0 1px hsla(0, 0%, 100%, 0.3);
+      color: hsla(213, 14%, 100%);
+    }
+
+    .display {
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
 </head>
 
-<body style="background-color: hsl(0, 0%, 15%); height:100vh;">
-  <div id="app" style="height:100%; padding-block: 6rem;">
-    <div
-      style="height: 100%;align-items: center;display: flex;gap: 200px;justify-content: space-around;flex-wrap: wrap;">
-      <div style="width: 640px; height: 640px;" id="softlight-img">
-        <canvas></canvas>
-        <img src="https://picsum.photos/640/640" alt="Random image">
+<body>
+  <div id="app">
+    <div class="container">
+      <div class="display">
+        <h2>Works on images</h2>
+        <div style="width: 640px; height: 640px;" id="softlight-img">
+          <img src="https://picsum.photos/640/640" alt="Random image">
+        </div>
       </div>
-
-      <div style="width: 640px; height: 640px;" id="softlight-vid">
-        <canvas></canvas>
-        <video controls>
-          <source src="/videos/dnd.mp4" type="video/mp4">
-        </video>
-
+      <div class="display">
+        <h2>Works on videos</h2>
+        <div style="width: 560px; height: 315px;" id="softlight-vid">
+          <video width="560" height="315" controls>
+            <source src="/videos/dnd.mp4" type="video/mp4">
+          </video>
+        </div>
       </div>
-      <div style="width: 640px; height: 640px;" id="softlight-vid">
-        <canvas></canvas>
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/aqz-KE-bpKQ" title="YouTube video player"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen>
-        </iframe>
-
+      <div class="display">
+        <h2>
+          Unfortunately can't work on YouTube because of their cross-origin policies
+        </h2>
+        <div style="width: 560px; height: 315px;" id="softlight-yt">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/aqz-KE-bpKQ" title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+      <div class="display">
+        <h2>
+          But can work on iframes without cross-origin policies
+        </h2>
+        <div style="width: 560px; height: 315px;" id="softlight-iframe">
+          <iframe width="560" height="315" src="/softlight.js/content/iframe-content.html" frameborder="0"></iframe>
+        </div>
+      </div>
+      <div class="display">
+        <h2>
+          You can have a large blur radius
+        </h2>
+        <div style="width: 540px; height: 440px;" id="softlight-big-blur">
+          <img src="https://picsum.photos/540/440" alt="Random image">
+        </div>
+        <div class="code">new SoftLight('#softlight-big-blur', { blurRadius: 100 });</div>
+      </div>
+      <div class="display">
+        <h2>
+          Or a small one
+        </h2>
+        <div style="width: 420px; height: 560px;" id="softlight-smol-blur">
+          <img src="https://picsum.photos/420/560" alt="Random image">
+        </div>
+        <div class="code">new SoftLight('#softlight-smol-blur', { blurRadius: 10 });</div>
       </div>
     </div>
   </div>
